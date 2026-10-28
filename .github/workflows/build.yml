@@ -1,0 +1,113 @@
+name: Build apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - name: Assemble debug APK
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pawhope-android-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  android-preview:
+    needs: android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: pawhope-android-apk
+          path: apk
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: python3 .github/scripts/android_shots.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-screens
+          path: screenshots/android
+
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and screenshot
+        run: bash .github/scripts/ios_shots.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pawhope-ios-app
+          path: build/ios/Build/Products
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-screens
+          path: screenshots/ios
+
+  preview:
+    needs: [android-preview, ios]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*-screens'
+          path: shots
+          merge-multiple: false
+        continue-on-error: true
+      - name: Write gallery
+        run: |
+          mkdir -p site
+          python3 - <<'PY'
+          from pathlib import Path
+          root = Path("shots")
+          images = sorted(root.rglob("*.png")) if root.exists() else []
+          parts = ["<!doctype html><meta charset=utf-8><title>爪印日记</title>",
+                   "<body style='margin:0;background:#f5f7f6;font-family:sans-serif;color:#24312e'>",
+                   "<h1 style='padding:24px 24px 0'>爪印日记</h1>",
+                   "<p style='padding:0 24px 8px'>这两边是安装包在模拟器里打开后的画面。</p>"]
+          labels = {"android-screens": "安卓", "ios-screens": "iOS"}
+          if not images:
+              parts.append("<p style='padding:24px'>这次没有截到画面。</p>")
+          for group in sorted({p.parts[1] for p in images} if images else []):
+              parts.append(f"<h2 style='padding:8px 24px'>{labels.get(group, group)}</h2>")
+              parts.append("<div style='display:flex;flex-wrap:wrap;gap:16px;padding:0 24px 24px'>")
+              for img in images:
+                  if img.parts[1] != group:
+                      continue
+                  rel = img.relative_to(root).as_posix()
+                  parts.append(f"<figure style='margin:0'><img src='{rel}' style='width:280px;border-radius:16px;background:#fff'><figcaption>{img.stem}</figcaption></figure>")
+              parts.append("</div>")
+          parts.append("</body>")
+          Path("site/index.html").write_text("".join(parts), encoding="utf-8")
+          if root.exists():
+              import shutil
+              for img in images:
+                  dest = Path("site") / img.relative_to(root)
+                  dest.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copy(img, dest)
+          PY
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4

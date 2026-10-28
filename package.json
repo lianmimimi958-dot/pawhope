@@ -1,0 +1,17 @@
+{
+  "name": "pawlog-pet-app",
+  "version": "2.4.0",
+  "description": "爪印日记 (PawLog) — 宠物全生命周期管理、智能硬件互联、社交食谱与严选商城平台（含企业级接口防篡改与防重放安全架构）",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "test:e2e": "node tests/e2e.js",
+    "test:llm": "node tests/llm-test.js",
+    "test:pwa": "node tests/pwa-test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "private": true
+}

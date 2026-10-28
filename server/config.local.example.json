@@ -1,0 +1,9 @@
+{
+  "llm": {
+    "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "apiKey": "在这里填你的 Key",
+    "model": "qwen-plus",
+    "timeoutMs": 12000,
+    "historyTurns": 8
+  }
+}

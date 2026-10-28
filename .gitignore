@@ -1,0 +1,12 @@
+.cursor/
+node_modules/
+server/config.local.json
+server/data/*.json
+!server/data/.gitkeep
+tests/e2e-result.json
+tests/e2e-log.txt
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/gradle/*.zip
