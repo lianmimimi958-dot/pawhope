@@ -14,12 +14,17 @@ xcodebuild \
 
 APP=$(find build/ios/Build/Products -name 'PawHope.app' -type d | head -n 1)
 echo "app=$APP"
-UDID=$(xcrun simctl list devices available | sed -n 's/.*iPhone.*(\([A-F0-9-]*\)) (Shutdown)/\1/p' | head -n 1)
-if [ -z "$UDID" ]; then
-  UDID=$(xcrun simctl list devices available | sed -n 's/.*iPhone.*(\([A-F0-9-]*\)).*/\1/p' | head -n 1)
-fi
+test -d "$APP"
+
+TYPE=$(xcrun simctl list devicetypes | grep 'iPhone' | head -n 1 | sed -n 's/.*(\(com.apple.CoreSimulator.SimDeviceType.[^)]*\)).*/\1/p')
+RUNTIME=$(xcrun simctl list runtimes available | grep 'iOS' | tail -n 1 | sed -n 's/.*(\(com.apple.CoreSimulator.SimRuntime.iOS-[^)]*\)).*/\1/p')
+echo "type=$TYPE"
+echo "runtime=$RUNTIME"
+test -n "$TYPE"
+test -n "$RUNTIME"
+UDID=$(xcrun simctl create "PawHopePreview" "$TYPE" "$RUNTIME")
 echo "udid=$UDID"
-xcrun simctl boot "$UDID" || true
+xcrun simctl boot "$UDID"
 xcrun simctl bootstatus "$UDID" -b
 xcrun simctl install "$UDID" "$APP"
 xcrun simctl launch "$UDID" cn.pawhope.app
