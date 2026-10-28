@@ -4,6 +4,10 @@ import Foundation
 struct Box {
     let value: Any
 
+    init(_ value: Any) {
+        self.value = value
+    }
+
     func obj(_ key: String) -> Box {
         Box(dict[key] ?? NSNull())
     }
