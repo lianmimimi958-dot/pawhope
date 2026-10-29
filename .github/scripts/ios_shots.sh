@@ -21,7 +21,7 @@ xcrun simctl list devicetypes | grep iPhone || true
 echo "---- runtimes ----"
 xcrun simctl list runtimes available || true
 
-TYPE=$(xcrun simctl list devicetypes | grep 'iPhone' | grep -v 'SE' | tail -n 1 | sed -n 's/.*(\(com.apple.CoreSimulator.SimDeviceType.[^)]*\)).*/\1/p')
+TYPE=$(xcrun simctl list devicetypes | grep 'iPhone' | grep -v 'SE' | head -n 1 | sed -n 's/.*(\(com.apple.CoreSimulator.SimDeviceType.[^)]*\)).*/\1/p')
 RUNTIME=$(xcrun simctl list runtimes available | grep 'iOS' | tail -n 1 | sed -n 's/.*[( ]\(com.apple.CoreSimulator.SimRuntime.iOS-[^ )]*\).*/\1/p')
 echo "type=$TYPE"
 echo "runtime=$RUNTIME"
