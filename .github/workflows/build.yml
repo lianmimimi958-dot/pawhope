@@ -43,12 +43,23 @@ jobs:
         with:
           name: pawhope-android-apk
           path: apk
+      - name: Allow the emulator to use KVM
+        run: |
+          if [ ! -e /dev/kvm ]; then
+            echo "This runner has no /dev/kvm, so the emulator cannot boot in time."
+            exit 1
+          fi
+          sudo chmod 666 /dev/kvm
+          ls -l /dev/kvm
+          test -r /dev/kvm && test -w /dev/kvm
       - uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           arch: x86_64
           target: google_apis
           disable-animations: true
+          disable-linux-hw-accel: false
+          emulator-boot-timeout: 420
           script: python3 .github/scripts/android_shots.py
       - uses: actions/upload-artifact@v4
         with:
@@ -113,7 +124,17 @@ jobs:
                   dest.parent.mkdir(parents=True, exist_ok=True)
                   shutil.copy(img, dest)
           PY
+      - name: Keep the current site when this run has no pictures
+        id: shots
+        run: |
+          if find site -name '*.png' -print -quit | grep -q .; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/upload-pages-artifact@v3
+        if: steps.shots.outputs.publish == 'true'
         with:
           path: site
       - uses: actions/deploy-pages@v4
+        if: steps.shots.outputs.publish == 'true'

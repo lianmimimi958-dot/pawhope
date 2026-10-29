@@ -95,6 +95,7 @@ final class PawStore: ObservableObject {
             secret = s
             token = t
             status = "已连接 https://pawhope.cn"
+            applyScreenshotScreen()
         } catch {
             status = error.localizedDescription
         }
@@ -142,6 +143,15 @@ final class PawStore: ObservableObject {
         }
         let root = ["home", "device", "social", "mall", "mine"][tabIndex]
         if screen != root { screen = root }
+    }
+
+    private func applyScreenshotScreen() {
+        let args = ProcessInfo.processInfo.arguments
+        guard let flag = args.firstIndex(of: "--screen"), flag + 1 < args.count else { return }
+        let name = args[flag + 1]
+        if ["home", "device", "social", "mall", "mine"].contains(name) {
+            screen = name
+        }
     }
 
     func selectTab(_ index: Int) {
