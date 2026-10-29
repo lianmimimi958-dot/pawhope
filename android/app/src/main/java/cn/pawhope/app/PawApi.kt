@@ -10,7 +10,7 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 object PawApi {
-    const val ORIGIN = "https://pawhope.cn"
+    var origin = "https://pawhope.cn"
 
     var signSecret: String = ""
     var authToken: String = ""
@@ -61,7 +61,7 @@ object PawApi {
     }
 
     private fun raw(method: String, path: String, rawBody: String?, signed: Boolean): ApiResult {
-        val conn = (URL(ORIGIN + path).openConnection() as HttpURLConnection).apply {
+            val conn = (URL(origin + path).openConnection() as HttpURLConnection).apply {
             requestMethod = method
             connectTimeout = 15000
             readTimeout = 20000

@@ -87,6 +87,7 @@ final class PawStore: ObservableObject {
     var isRoot: Bool { ["home", "device", "social", "mall", "mine"].contains(screen) }
 
     func bootstrap() async {
+        applyPreviewOrigin()
         status = "正在读取你的数据"
         do {
             var s = ""
@@ -94,7 +95,7 @@ final class PawStore: ObservableObject {
             state = try await PawApi.bootstrap(secret: &s, token: &t)
             secret = s
             token = t
-            status = "已连接 https://pawhope.cn"
+            status = "已连接 \(PawApi.origin)"
             applyScreenshotScreen()
         } catch {
             status = error.localizedDescription
@@ -143,6 +144,15 @@ final class PawStore: ObservableObject {
         }
         let root = ["home", "device", "social", "mall", "mine"][tabIndex]
         if screen != root { screen = root }
+    }
+
+    private func applyPreviewOrigin() {
+        let args = ProcessInfo.processInfo.arguments
+        guard let flag = args.firstIndex(of: "--origin"), flag + 1 < args.count else { return }
+        let value = args[flag + 1]
+        if value.hasPrefix("http://") || value.hasPrefix("https://") {
+            PawApi.origin = value
+        }
     }
 
     private func applyScreenshotScreen() {

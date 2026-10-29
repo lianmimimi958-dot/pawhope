@@ -102,7 +102,7 @@ jobs:
           parts = ["<!doctype html><meta charset=utf-8><title>爪印日记</title>",
                    "<body style='margin:0;background:#f5f7f6;font-family:sans-serif;color:#24312e'>",
                    "<h1 style='padding:24px 24px 0'>爪印日记</h1>",
-                   "<p style='padding:0 24px 8px'>这两边是安装包在模拟器里打开后的画面。</p>"]
+                   "<p style='padding:0 24px 8px'>这两边是安装包在模拟器里打开后的画面。pawhope.cn 的加密连接目前会被重置，所以预览连的是同一套接口在编译机上临时启动的副本。</p>"]
           labels = {"android-screens": "安卓", "ios-screens": "iOS"}
           if not images:
               parts.append("<p style='padding:24px'>这次没有截到画面。</p>")

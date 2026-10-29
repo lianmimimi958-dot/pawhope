@@ -2,6 +2,23 @@
 set -eu
 cd "$(dirname "$0")/../.."
 mkdir -p screenshots/ios build
+node server/index.js >/tmp/pawhope-api.log 2>&1 &
+ready=0
+i=0
+while [ "$i" -lt 30 ]; do
+  if curl -sf http://127.0.0.1:3680/api/v1/bootstrap >/dev/null; then
+    ready=1
+    break
+  fi
+  i=$((i + 1))
+  sleep 1
+done
+if [ "$ready" -ne 1 ]; then
+  echo "local api did not start"
+  cat /tmp/pawhope-api.log
+  exit 1
+fi
+echo "local api ready"
 
 xcodebuild \
   -project ios/PawHope.xcodeproj \
@@ -39,7 +56,7 @@ shot() {
   screen="$2"
   wait="$3"
   xcrun simctl terminate "$UDID" cn.pawhope.app >/dev/null 2>&1 || true
-  xcrun simctl launch "$UDID" cn.pawhope.app --screen "$screen"
+  xcrun simctl launch "$UDID" cn.pawhope.app --screen "$screen" --origin http://127.0.0.1:3680
   sleep "$wait"
   xcrun simctl io "$UDID" screenshot "screenshots/ios/$name"
   echo "saved screenshots/ios/$name"

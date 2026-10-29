@@ -71,6 +71,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
+        intent.getStringExtra("origin")?.trimEnd('/')?.let { extra ->
+            if (extra.startsWith("http://") || extra.startsWith("https://")) PawApi.origin = extra
+        }
         WalkSession.onUpdate = {
             if (WalkSession.watching) {
                 statusView.text = "正在记录轨迹，已收到 ${WalkSession.points.length()} 个点"
@@ -172,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                     e.message ?: "连接失败"
                 }
             }
-            statusView.text = err ?: "已连接 https://pawhope.cn"
+            statusView.text = err ?: "已连接 ${PawApi.origin}"
             render()
         }
     }

@@ -71,7 +71,7 @@ struct ApiResult {
 }
 
 enum PawApi {
-    static let origin = "https://pawhope.cn"
+    static var origin = "https://pawhope.cn"
 
     static func bootstrap(secret: inout String, token: inout String) async throws -> Box {
         let res = try await raw(method: "GET", path: "/api/v1/bootstrap", body: nil, secret: "", token: "")

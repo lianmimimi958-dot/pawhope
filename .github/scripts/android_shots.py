@@ -59,8 +59,28 @@ def tap(label):
     return False
 
 
+def start_api():
+    log = open("/tmp/pawhope-api.log", "w", encoding="utf-8")
+    proc = subprocess.Popen(["node", "server/index.js"], stdout=log, stderr=subprocess.STDOUT)
+    for _ in range(30):
+        probe = subprocess.run(["curl", "-sf", "http://127.0.0.1:3680/api/v1/bootstrap"], stdout=subprocess.DEVNULL)
+        if probe.returncode == 0:
+            print("local api ready", proc.pid)
+            return
+        if proc.poll() is not None:
+            break
+        time.sleep(1)
+    log.flush()
+    print(Path("/tmp/pawhope-api.log").read_text(encoding="utf-8", errors="replace")[-4000:])
+    raise SystemExit("local api did not start")
+
+
+start_api()
 run(["adb", "install", "-r", "apk/app-debug.apk"])
-run(["adb", "shell", "am", "start", "-n", "cn.pawhope.app/.MainActivity"])
+run([
+    "adb", "shell", "am", "start", "-n", "cn.pawhope.app/.MainActivity",
+    "--es", "origin", "http://10.0.2.2:3680",
+])
 wait_connected()
 time.sleep(2)
 shot("01-home.png")
